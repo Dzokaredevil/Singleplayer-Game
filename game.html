@@ -1,58 +1,57 @@
 <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
  
 <script>  
-var ctx = document.getElementById("ctx").getContext("2d");
-ctx.font = '30px Arial';
- 
-var HEIGHT = 500;
-var WIDTH = 500;
-var message = 'Bouncing';
- 
-//player
-var x = 50;
-var spdX = 30;
-var y = 40;
-var spdY = 5;
-var name = 'P';
- 
-//enemy
-var enemy_x = 150;
-var enemy_spdX = 10;
-var enemy_y = 350;
-var enemy_spdY = 15;
-var enemy_name = 'E';
- 
- 
-setInterval(update,40);
- 
-function update(){
-        //player
-        x += spdX;
-        y += spdY;
-        ctx.fillText(name,x,y);
-               
-        if(x < 0 || x > WIDTH){
-                console.log(message);
-                spdX = -spdX;
-        }
-        if(y < 0 || y > HEIGHT){
-                console.log(message);
-                spdY = -spdY;
-        }
-       
-        //enemy
-        enemy_x += enemy_spdX;
-        enemy_y += enemy_spdY;
-        ctx.fillText(enemy_name,enemy_x,enemy_y);
-                         
-        if(enemy_x < 0 || enemy_x > WIDTH){
-                console.log(message);
-                enemy_spdX = -enemy_spdX;
-        }
-        if(enemy_y < 0 || enemy_y > HEIGHT){
-                console.log(message);
-                enemy_spdY = -enemy_spdY;
-        }
-}
+	var ctx = document.getElementById("ctx").getContext("2d");
+	ctx.font = '30px Arial';
+	 
+	var HEIGHT = 500;
+	var WIDTH = 500;
+	var message = 'Bouncing';
+	 
+	var player = {
+			x:50,
+			spdX:30,
+			y:40,
+			spdY:5,
+			name:'P',      
+	};
+	 
+	var enemy = {
+			x:150,
+			spdX:10,
+			y:350,
+			spdY:15,
+			name:'E',      
+	};
+	var enemy2 = {
+			x:150,
+			spdX:10,
+			y:350,
+			spdY:15,
+			name:'E',      
+	};
+	setInterval(update,40);
+	 
+	function updateEntity(something){
+			something.x += something.spdX;
+			something.y += something.spdY;
+			ctx.fillText(something.name,something.x,something.y);
+				     
+			if(something.x < 0 || something.x > WIDTH){
+					console.log(message);
+					something.spdX = -something.spdX;
+			}
+			if(something.y < 0 || something.y > HEIGHT){
+					console.log(message);
+					something.spdY = -something.spdY;
+			}
+	}
+	 
+	function update(){
+			updateEntity(enemy);
+			updateEntity(enemy2);
+			updateEntity(player);
+		   
+	}
  
 </script>
