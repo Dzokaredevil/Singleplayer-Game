@@ -29,6 +29,7 @@
 			pressingUp:false,
 			pressingLeft:false,
 			pressingRight:false,
+			aimAngle:0,
 	};
 	 
 	var enemyList = {};
@@ -142,7 +143,7 @@
 			bulletList[id] = asd;
 	}
 	 
-	randomlyGenerateBullet = function(){
+	randomlyGenerateBullet = function(actor,aimOverwrite){
 			//Math.random() returns a number between 0 and 1
 			var x = player.x;
 			var y = player.y;
@@ -150,7 +151,11 @@
 			var width = 10;
 			var id = Math.random();
 		   
-			var angle = Math.random()*360;
+			var angle;
+			if(aimOverwrite !== undefined)
+					angle = aimOverwrite;
+			else angle = actor.aimAngle;
+		   
 			var spdX = Math.cos(angle/180*Math.PI)*5;
 			var spdY = Math.sin(angle/180*Math.PI)*5;
 			Bullet(id,x,y,spdX,spdY,width,height);
@@ -189,13 +194,33 @@
 	 
 	document.onclick = function(mouse){
 			if(player.attackCounter > 25){  //every 1 sec
-					randomlyGenerateBullet();
 					player.attackCounter = 0;
+					randomlyGenerateBullet(player);
 			}
+	}
+	document.oncontextmenu = function(mouse){
+			if(player.attackCounter > 50){  //every 1 sec
+					player.attackCounter = 0;
+					/*
+					for(var i = 0 ; i < 360; i++){
+							randomlyGenerateBullet(player,i);
+					}
+					*/
+					randomlyGenerateBullet(player,player.aimAngle - 5);
+					randomlyGenerateBullet(player,player.aimAngle);
+					randomlyGenerateBullet(player,player.aimAngle + 5);
+			}
+			mouse.preventDefault();
 	}
 	 
 	document.onmousemove = function(mouse){
-			
+			var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
+			var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
+		   
+			mouseX -= player.x;
+			mouseY -= player.y;
+		   
+			player.aimAngle = Math.atan2(mouseY,mouseX) / Math.PI * 180;
 	}
 	 
 	document.onkeydown = function(event){
@@ -327,5 +352,5 @@
 	startNewGame();
 	 
 	setInterval(update,40);
-	 
+ 
 </script>
