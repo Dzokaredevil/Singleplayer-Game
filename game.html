@@ -22,7 +22,13 @@
 			width:20,
 			height:20,
 			color:'green',
+			//
 			atkSpd:1,
+			attackCounter:0,
+			pressingDown:false,
+			pressingUp:false,
+			pressingLeft:false,
+			pressingRight:false,
 	};
 	 
 	var enemyList = {};
@@ -80,7 +86,6 @@
 			Enemy(id,x,y,spdX,spdY,width,height);
 		   
 	}
-	 
 	 
 	Upgrade = function (id,x,y,spdX,spdY,width,height,category,color){
 			var asd = {
@@ -151,32 +156,11 @@
 			Bullet(id,x,y,spdX,spdY,width,height);
 	}
 	 
-	 
-	document.onmousemove = function(mouse){
-			var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
-			var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
-		   
-			if(mouseX < player.width/2)
-					mouseX = player.width/2;
-			if(mouseX > WIDTH-player.width/2)
-					mouseX = WIDTH - player.width/2;
-			if(mouseY < player.height/2)
-					mouseY = player.height/2;
-			if(mouseY > HEIGHT - player.height/2)
-					mouseY = HEIGHT - player.height/2;
-		   
-			player.x = mouseX;
-			player.y = mouseY;
-	}
-	 
-	 
-	 
-	 
-	 
 	updateEntity = function (something){
 			updateEntityPosition(something);
 			drawEntity(something);
 	}
+	 
 	updateEntityPosition = function(something){
 			something.x += something.spdX;
 			something.y += something.spdY;
@@ -196,7 +180,6 @@
 					&& rect2.y <= rect1.y + rect1.height;
 	}
 	 
-	 
 	drawEntity = function(something){
 			ctx.save();
 			ctx.fillStyle = something.color;
@@ -204,7 +187,61 @@
 			ctx.restore();
 	}
 	 
+	document.onclick = function(mouse){
+			if(player.attackCounter > 25){  //every 1 sec
+					randomlyGenerateBullet();
+					player.attackCounter = 0;
+			}
+	}
 	 
+	document.onmousemove = function(mouse){
+			
+	}
+	 
+	document.onkeydown = function(event){
+			if(event.keyCode === 68)        //d
+					player.pressingRight = true;
+			else if(event.keyCode === 83)   //s
+					player.pressingDown = true;
+			else if(event.keyCode === 65) //a
+					player.pressingLeft = true;
+			else if(event.keyCode === 87) // w
+					player.pressingUp = true;
+	}
+	 
+	document.onkeyup = function(event){
+			if(event.keyCode === 68)        //d
+					player.pressingRight = false;
+			else if(event.keyCode === 83)   //s
+					player.pressingDown = false;
+			else if(event.keyCode === 65) //a
+					player.pressingLeft = false;
+			else if(event.keyCode === 87) // w
+					player.pressingUp = false;
+	}
+	 
+	updatePlayerPosition = function(){
+			if(player.pressingRight)
+					player.x += 10;
+			if(player.pressingLeft)
+					player.x -= 10;
+			if(player.pressingDown)
+					player.y += 10;
+			if(player.pressingUp)
+					player.y -= 10;
+		   
+			//ispositionvalid
+			if(player.x < player.width/2)
+					player.x = player.width/2;
+			if(player.x > WIDTH-player.width/2)
+					player.x = WIDTH - player.width/2;
+			if(player.y < player.height/2)
+					player.y = player.height/2;
+			if(player.y > HEIGHT - player.height/2)
+					player.y = HEIGHT - player.height/2;
+		   
+		   
+	}
 	 
 	update = function(){
 			ctx.clearRect(0,0,WIDTH,HEIGHT);
@@ -216,10 +253,9 @@
 	 
 			if(frameCount % 75 === 0)       //every 3 sec
 					randomlyGenerateUpgrade();
-	 
-			if(frameCount % Math.round(25/player.atkSpd) === 0)     //every 1 sec
-					randomlyGenerateBullet();
-	 
+		   
+			player.attackCounter += player.atkSpd;
+		   
 		   
 			for(var key in bulletList){
 					updateEntity(bulletList[key]);
@@ -268,11 +304,12 @@
 					console.log("You lost! You survived for " + timeSurvived + " ms.");            
 					startNewGame();
 			}
-						   
+			updatePlayerPosition();
 			drawEntity(player);
 			ctx.fillText(player.hp + " Hp",0,30);
 			ctx.fillText('Score: ' + score,200,30);
 	}
+	 
 	startNewGame = function(){
 			player.hp = 10;
 			timeWhenGameStarted = Date.now();
