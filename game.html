@@ -12,13 +12,50 @@
 	 
 	var score = 0;
 	var player;
+	var enemyList = {};
+	var upgradeList = {};
+	var bulletList = {};
+	 
+	 
+	Player = function(){
+			var self = Actor('player','myId',50,40,30,5,20,20,'green',10,1);
+		   
+			self.updatePosition = function(){
+					if(self.pressingRight)
+							self.x += 10;
+					if(self.pressingLeft)
+							self.x -= 10;  
+					if(self.pressingDown)
+							self.y += 10;  
+					if(self.pressingUp)
+							self.y -= 10;  
+				   
+					//ispositionvalid
+					if(self.x < self.width/2)
+							self.x = self.width/2;
+					if(self.x > WIDTH-self.width/2)
+							self.x = WIDTH - self.width/2;
+					if(self.y < self.height/2)
+							self.y = self.height/2;
+					if(self.y > HEIGHT - self.height/2)
+							self.y = HEIGHT - self.height/2;
+			}
+		   
+			self.pressingDown = false;
+			self.pressingUp = false;
+			self.pressingLeft = false;
+			self.pressingRight = false;
+			return self;
+		   
+	}
 	 
 	Entity = function(type,id,x,y,spdX,spdY,width,height,color){
 			var self = {
 					type:type,
+					id:id,
 					x:x,
-					spdX:spdX,
 					y:y,
+					spdX:spdX,
 					spdY:spdY,
 					width:width,
 					height:height,
@@ -28,44 +65,18 @@
 					self.updatePosition();
 					self.draw();
 			}
-			self.updatePosition = function(){
-					if(self.type === 'player'){
-							if(self.pressingRight)
-									self.x += 10;
-							if(self.pressingLeft)
-									self.x -= 10;  
-							if(self.pressingDown)
-									self.y += 10;  
-							if(self.pressingUp)
-									self.y -= 10;  
-						   
-							//ispositionvalid
-							if(self.x < self.width/2)
-									self.x = self.width/2;
-							if(self.x > WIDTH-self.width/2)
-									self.x = WIDTH - self.width/2;
-							if(self.y < self.height/2)
-									self.y = self.height/2;
-							if(self.y > HEIGHT - self.height/2)
-									self.y = HEIGHT - self.height/2;
-				   
-					} else {
-							self.x += self.spdX;
-							self.y += self.spdY;
-										   
-							if(self.x < 0 || self.x > WIDTH){
-									self.spdX = -self.spdX;
-							}
-							if(self.y < 0 || self.y > HEIGHT){
-									self.spdY = -self.spdY;
-							}
-					}
+			self.draw = function(){
+					ctx.save();
+					ctx.fillStyle = self.color;
+					ctx.fillRect(self.x-self.width/2,self.y-self.height/2,self.width,self.height);
+					ctx.restore();
 			}
-			self.getDistance = function (entity2){  //return distance (number)
+			self.getDistance = function(entity2){   //return distance (number)
 					var vx = self.x - entity2.x;
 					var vy = self.y - entity2.y;
 					return Math.sqrt(vx*vx+vy*vy);
 			}
+	 
 			self.testCollision = function(entity2){ //return if colliding (true/false)
 					var rect1 = {
 							x:self.x-self.width/2,
@@ -80,23 +91,36 @@
 							height:entity2.height,
 					}
 					return testCollisionRectRect(rect1,rect2);
+				   
 			}
-			self.draw = function(){
-					ctx.save();
-					ctx.fillStyle = self.color;
-					ctx.fillRect(self.x-self.width/2,self.y-self.height/2,self.width,self.height);
-					ctx.restore();
+			self.updatePosition = function(){
+					self.x += self.spdX;
+					self.y += self.spdY;
+								   
+					if(self.x < 0 || self.x > WIDTH){
+							self.spdX = -self.spdX;
+					}
+					if(self.y < 0 || self.y > HEIGHT){
+							self.spdY = -self.spdY;
+					}
 			}
 		   
 			return self;
 	}
 	 
-	Actor = function(type,id,x,y,spdX,spdY,width,height,color){
+	Actor = function(type,id,x,y,spdX,spdY,width,height,color,hp,atkSpd){
 			var self = Entity(type,id,x,y,spdX,spdY,width,height,color);
 		   
+			self.hp = hp;
+			self.atkSpd = atkSpd;
 			self.attackCounter = 0;
 			self.aimAngle = 0;
-			self.atkSpd = 1;
+		   
+			var super_update = self.update;
+			self.update = function(){
+					super_update();
+					self.attackCounter += self.atkSpd;
+			}
 		   
 			self.performAttack = function(){
 					if(self.attackCounter > 25){    //every 1 sec
@@ -104,6 +128,7 @@
 							generateBullet(self);
 					}
 			}
+		   
 			self.performSpecialAttack = function(){
 					if(self.attackCounter > 50){    //every 1 sec
 							self.attackCounter = 0;
@@ -117,25 +142,13 @@
 							generateBullet(self,self.aimAngle + 5);
 					}
 			}
+	 
+		   
 			return self;
 	}
 	 
-	Player = function(){
-			var p = Actor('player','myId',50,40,30,5,20,20,'green');
-				   
-			p.pressingDown = false;
-			p.pressingUp = false;
-			p.pressingLeft = false;
-			p.pressingRight = false;
-			return p;
-	}
-	 
-	var enemyList = {};
-	var upgradeList = {};
-	var bulletList = {};
-	 
 	Enemy = function(id,x,y,spdX,spdY,width,height){
-			var self = Actor('enemy',id,x,y,spdX,spdY,width,height,'red');
+			var self = Actor('enemy',id,x,y,spdX,spdY,width,height,'red',10,1);
 			enemyList[id] = self;
 	}
 	 
@@ -152,8 +165,9 @@
 		   
 	}
 	 
-	Upgrade = function(id,x,y,spdX,spdY,width,height,color,category){
+	Upgrade = function (id,x,y,spdX,spdY,width,height,category,color){
 			var self = Entity('upgrade',id,x,y,spdX,spdY,width,height,color);
+		   
 			self.category = category;
 			upgradeList[id] = self;
 	}
@@ -176,12 +190,14 @@
 					var color = 'purple';
 			}
 		   
-			Upgrade(id,x,y,spdX,spdY,width,height,color,category);
+			Upgrade(id,x,y,spdX,spdY,width,height,category,color);
 	}
 	 
 	Bullet = function (id,x,y,spdX,spdY,width,height){
 			var self = Entity('bullet',id,x,y,spdX,spdY,width,height,'black');
+		   
 			self.timer = 0;
+	 
 			bulletList[id] = self;
 	}
 	 
@@ -262,7 +278,6 @@
 			if(frameCount % 75 === 0)       //every 3 sec
 					randomlyGenerateUpgrade();
 		   
-			player.attackCounter += player.atkSpd;
 		   
 		   
 			for(var key in bulletList){
@@ -275,12 +290,14 @@
 					}
 				   
 					for(var key2 in enemyList){
+							/*
 							var isColliding = bulletList[key].testCollision(enemyList[key2]);
 							if(isColliding){
 									toRemove = true;
 									delete enemyList[key2];
 									break;
-							}                      
+							}      
+							*/
 					}
 					if(toRemove){
 							delete bulletList[key];
@@ -301,6 +318,7 @@
 		   
 			for(var key in enemyList){
 					enemyList[key].update();
+					enemyList[key].performAttack();
 				   
 					var isColliding = player.testCollision(enemyList[key]);
 					if(isColliding){
@@ -313,6 +331,7 @@
 					startNewGame();
 			}
 			player.update();
+		   
 			ctx.fillText(player.hp + " Hp",0,30);
 			ctx.fillText('Score: ' + score,200,30);
 	}
