@@ -40,6 +40,15 @@
 					if(self.y > HEIGHT - self.height/2)
 							self.y = HEIGHT - self.height/2;
 			}
+			var super_update = self.update;
+			self.update = function(){
+					super_update();
+					if(self.hp <= 0){
+							var timeSurvived = Date.now() - timeWhenGameStarted;           
+							console.log("You lost! You survived for " + timeSurvived + " ms.");            
+							startNewGame();
+					}
+			}
 		   
 			self.pressingDown = false;
 			self.pressingUp = false;
@@ -149,6 +158,18 @@
 	 
 	Enemy = function(id,x,y,spdX,spdY,width,height){
 			var self = Actor('enemy',id,x,y,spdX,spdY,width,height,'red',10,1);
+		   
+			var super_update = self.update;
+			self.update = function(){
+					super_update();
+					self.performAttack();
+				   
+					var isColliding = player.testCollision(self);
+					if(isColliding){
+							player.hp = player.hp - 1;
+					}
+			}
+		   
 			enemyList[id] = self;
 	}
 	 
@@ -167,6 +188,19 @@
 	 
 	Upgrade = function (id,x,y,spdX,spdY,width,height,category,color){
 			var self = Entity('upgrade',id,x,y,spdX,spdY,width,height,color);
+		   
+			var super_update = self.update;
+			self.update = function(){
+					super_update();
+					var isColliding = player.testCollision(self);
+					if(isColliding){
+							if(self.category === 'score')
+									score += 1000;
+							if(self.category === 'atkSpd')
+									player.atkSpd += 3;
+							delete upgradeList[self.id];
+					}
+			}
 		   
 			self.category = category;
 			upgradeList[id] = self;
@@ -197,7 +231,30 @@
 			var self = Entity('bullet',id,x,y,spdX,spdY,width,height,'black');
 		   
 			self.timer = 0;
-	 
+		   
+			var super_update = self.update;
+			self.update = function(){
+					super_update();
+					var toRemove = false;
+					self.timer++;
+					if(self.timer > 75){
+							toRemove = true;
+					}
+				   
+					for(var key2 in enemyList){
+							/*
+							var isColliding = self.testCollision(enemyList[key2]);
+							if(isColliding){
+									toRemove = true;
+									delete enemyList[key2];
+									break;
+							}      
+							*/
+					}
+					if(toRemove){
+							delete bulletList[self.id];
+					}
+			}
 			bulletList[id] = self;
 	}
 	 
@@ -282,54 +339,16 @@
 		   
 			for(var key in bulletList){
 					bulletList[key].update();
-				   
-					var toRemove = false;
-					bulletList[key].timer++;
-					if(bulletList[key].timer > 75){
-							toRemove = true;
-					}
-				   
-					for(var key2 in enemyList){
-							/*
-							var isColliding = bulletList[key].testCollision(enemyList[key2]);
-							if(isColliding){
-									toRemove = true;
-									delete enemyList[key2];
-									break;
-							}      
-							*/
-					}
-					if(toRemove){
-							delete bulletList[key];
-					}
 			}
 		   
 			for(var key in upgradeList){
 					upgradeList[key].update();
-					var isColliding = player.testCollision(upgradeList[key]);
-					if(isColliding){
-							if(upgradeList[key].category === 'score')
-									score += 1000;
-							if(upgradeList[key].category === 'atkSpd')
-									player.atkSpd += 3;
-							delete upgradeList[key];
-					}
 			}
 		   
 			for(var key in enemyList){
 					enemyList[key].update();
-					enemyList[key].performAttack();
-				   
-					var isColliding = player.testCollision(enemyList[key]);
-					if(isColliding){
-							player.hp = player.hp - 1;
-					}
 			}
-			if(player.hp <= 0){
-					var timeSurvived = Date.now() - timeWhenGameStarted;           
-					console.log("You lost! You survived for " + timeSurvived + " ms.");            
-					startNewGame();
-			}
+		   
 			player.update();
 		   
 			ctx.fillText(player.hp + " Hp",0,30);
@@ -354,5 +373,5 @@
 	startNewGame();
 	 
 	setInterval(update,40);
-	 
+ 
 </script>
