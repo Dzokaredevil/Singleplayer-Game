@@ -4,38 +4,6 @@ var enemyList = {};
 var upgradeList = {};
 var bulletList = {};
 
-Player = function(){
-	var self = Actor('player','myId',50,40,30,5,20,20,Img.player,10,1);
-	
-	self.updatePosition = function(){
-		if(self.pressingRight)
-			self.x += 10;
-		if(self.pressingLeft)
-			self.x -= 10;	
-		if(self.pressingDown)
-			self.y += 10;	
-		if(self.pressingUp)
-			self.y -= 10;	
-		
-		//ispositionvalid
-		if(self.x < self.width/2)
-			self.x = self.width/2;
-		if(self.x > WIDTH-self.width/2)
-			self.x = WIDTH - self.width/2;
-		if(self.y < self.height/2)
-			self.y = self.height/2;
-		if(self.y > HEIGHT - self.height/2)
-			self.y = HEIGHT - self.height/2;
-	}
-	
-	self.pressingDown = false;
-	self.pressingUp = false;
-	self.pressingLeft = false;
-	self.pressingRight = false;
-	return self;
-	
-}
-
 Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 	var self = {
 		type:type,
@@ -54,9 +22,20 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 	}
 	self.draw = function(){
 		ctx.save();
-		var x = self.x-self.width/2;
-		var y = self.y-self.height/2;
-		ctx.drawImage(self.img,x,y);
+		var x = self.x - player.x;
+		var y = self.y - player.y;
+		
+		x += WIDTH/2;
+		y += HEIGHT/2;
+		
+		x -= self.width/2;
+		y -= self.height/2;
+		
+		ctx.drawImage(self.img,
+			0,0,self.img.width,self.img.height,
+			x,y,self.width,self.height
+		);
+		
 		ctx.restore();
 	}
 	self.getDistance = function(entity2){	//return distance (number)
@@ -94,6 +73,38 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 	}
 	
 	return self;
+}
+
+Player = function(){
+	var self = Actor('player','myId',50,40,30,5,50,70,Img.player,10,1);
+	
+	self.updatePosition = function(){
+		if(self.pressingRight)
+			self.x += 10;
+		if(self.pressingLeft)
+			self.x -= 10;	
+		if(self.pressingDown)
+			self.y += 10;	
+		if(self.pressingUp)
+			self.y -= 10;	
+		
+		//ispositionvalid
+		if(self.x < self.width/2)
+			self.x = self.width/2;
+		if(self.x > WIDTH-self.width/2)
+			self.x = WIDTH - self.width/2;
+		if(self.y < self.height/2)
+			self.y = self.height/2;
+		if(self.y > HEIGHT - self.height/2)
+			self.y = HEIGHT - self.height/2;
+	}
+	
+	self.pressingDown = false;
+	self.pressingUp = false;
+	self.pressingLeft = false;
+	self.pressingRight = false;
+	return self;
+	
 }
 
 Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
@@ -144,8 +155,8 @@ randomlyGenerateEnemy = function(){
 	//Math.random() returns a number between 0 and 1
 	var x = Math.random()*WIDTH;
 	var y = Math.random()*HEIGHT;
-	var height = 10 + Math.random()*30;	//between 10 and 40
-	var width = 10 + Math.random()*30;
+	var height = 64;	//between 10 and 40
+	var width = 64;
 	var id = Math.random();
 	var spdX = 5 + Math.random() * 5;
 	var spdY = 5 + Math.random() * 5;
@@ -164,8 +175,8 @@ randomlyGenerateUpgrade = function(){
 	//Math.random() returns a number between 0 and 1
 	var x = Math.random()*WIDTH;
 	var y = Math.random()*HEIGHT;
-	var height = 10;
-	var width = 10;
+	var height = 32;
+	var width = 32;
 	var id = Math.random();
 	var spdX = 0;
 	var spdY = 0;
@@ -193,8 +204,8 @@ generateBullet = function(actor,aimOverwrite){
 	//Math.random() returns a number between 0 and 1
 	var x = actor.x;
 	var y = actor.y;
-	var height = 10;
-	var width = 10;
+	var height = 24;
+	var width = 24;
 	var id = Math.random();
 	
 	var angle;
