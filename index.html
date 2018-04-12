@@ -1,6 +1,6 @@
 <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
 <script src="js/Entities.js"></script>
-	<script> 
+<script> 
 	var ctx = document.getElementById("ctx").getContext("2d"); 
 	ctx.font = '30px Arial';
 
@@ -178,13 +178,12 @@
 		return self;
 	}
 
-	currentMap = Maps('field','img/map.png',1280,960);
 
+	currentMap = Maps('field','img/map.png',1280,960);
 
 	player = Player();
 	startNewGame();
 
 	setInterval(update,40);
-
 
 </script>

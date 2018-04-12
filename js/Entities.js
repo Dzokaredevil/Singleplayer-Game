@@ -3,14 +3,12 @@ var enemyList = {};
 var upgradeList = {};
 var bulletList = {};
 
-Entity = function(type,id,x,y,spdX,spdY,width,height,img){
+Entity = function(type,id,x,y,width,height,img){
 	var self = {
 		type:type,
 		id:id,
 		x:x,
 		y:y,
-		spdX:spdX,
-		spdY:spdY,
 		width:width,
 		height:height,
 		img:img,
@@ -59,23 +57,13 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 		return testCollisionRectRect(rect1,rect2);
 		
 	}
-	self.updatePosition = function(){
-		self.x += self.spdX;
-		self.y += self.spdY;
-				
-		if(self.x < 0 || self.x > currentMap.width){
-			self.spdX = -self.spdX;
-		}
-		if(self.y < 0 || self.y > currentMap.height){
-			self.spdY = -self.spdY;
-		}
-	}
+	self.updatePosition = function(){}
 	
 	return self;
 }
 
 Player = function(){
-	var self = Actor('player','myId',50,40,30,5,50,70,Img.player,10,1);
+	var self = Actor('player','myId',50,40,50,70,Img.player,10,1);
 	
 	self.updatePosition = function(){
 		if(self.pressingRight)
@@ -106,8 +94,8 @@ Player = function(){
 	
 }
 
-Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
-	var self = Entity(type,id,x,y,spdX,spdY,width,height,img);
+Actor = function(type,id,x,y,width,height,img,hp,atkSpd){
+	var self = Entity(type,id,x,y,width,height,img);
 	
 	self.hp = hp;
 	self.atkSpd = atkSpd;
@@ -145,9 +133,39 @@ Actor = function(type,id,x,y,spdX,spdY,width,height,img,hp,atkSpd){
 	return self;
 }
 
-Enemy = function(id,x,y,spdX,spdY,width,height){
-	var self = Actor('enemy',id,x,y,spdX,spdY,width,height,Img.enemy,10,1);
+Enemy = function(id,x,y,width,height){
+	var self = Actor('enemy',id,x,y,width,height,Img.enemy,10,1);
 	enemyList[id] = self;
+	
+	var super_update = self.update; 
+	self.update = function(){
+		super_update();
+		self.updateAim();
+	}	
+	
+	self.updateAim = function(){
+		var diffX = player.x - self.x;
+		var diffY = player.y - self.y;
+		
+		self.aimAngle = Math.atan2(diffY,diffX) / Math.PI * 180
+	}
+	
+	
+	self.updatePosition = function(){
+		var diffX = player.x - self.x;
+		var diffY = player.y - self.y;
+		
+		if(diffX > 0)
+			self.x += 3;
+		else
+			self.x -= 3;
+			
+		if(diffY > 0)
+			self.y += 3;
+		else
+			self.y -= 3;
+	
+	}
 }
 
 randomlyGenerateEnemy = function(){
@@ -157,14 +175,12 @@ randomlyGenerateEnemy = function(){
 	var height = 64;	//between 10 and 40
 	var width = 64;
 	var id = Math.random();
-	var spdX = 5 + Math.random() * 5;
-	var spdY = 5 + Math.random() * 5;
-	Enemy(id,x,y,spdX,spdY,width,height);
+	Enemy(id,x,y,width,height);
 	
 }
 
-Upgrade = function (id,x,y,spdX,spdY,width,height,category,img){
-	var self = Entity('upgrade',id,x,y,spdX,spdY,width,height,img);
+Upgrade = function (id,x,y,width,height,category,img){
+	var self = Entity('upgrade',id,x,y,width,height,img);
 	
 	self.category = category;
 	upgradeList[id] = self;
@@ -177,8 +193,6 @@ randomlyGenerateUpgrade = function(){
 	var height = 32;
 	var width = 32;
 	var id = Math.random();
-	var spdX = 0;
-	var spdY = 0;
 	
 	if(Math.random()<0.5){
 		var category = 'score';
@@ -188,14 +202,29 @@ randomlyGenerateUpgrade = function(){
 		var img = Img.upgrade2;
 	}
 	
-	Upgrade(id,x,y,spdX,spdY,width,height,category,img);
+	Upgrade(id,x,y,width,height,category,img);
 }
 
 Bullet = function (id,x,y,spdX,spdY,width,height,combatType){
-	var self = Entity('bullet',id,x,y,spdX,spdY,width,height,Img.bullet);
+	var self = Entity('bullet',id,x,y,width,height,Img.bullet);
 	
 	self.timer = 0;
 	self.combatType = combatType;
+	self.spdX = spdX;
+	self.spdY = spdY
+	
+	self.updatePosition = function(){
+		self.x += self.spdX;
+		self.y += self.spdY;
+				
+		if(self.x < 0 || self.x > currentMap.width){
+			self.spdX = -self.spdX;
+		}
+		if(self.y < 0 || self.y > currentMap.height){
+			self.spdY = -self.spdY;
+		}
+	}
+	
 	
 	bulletList[id] = self;
 }
