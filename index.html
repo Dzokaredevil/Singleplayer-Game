@@ -1,11 +1,11 @@
 <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
 <script src="js/Entities.js"></script>
-<script> 
+	<script> 
 	var ctx = document.getElementById("ctx").getContext("2d"); 
 	ctx.font = '30px Arial';
 
-	var HEIGHT = 500;
 	var WIDTH = 500;
+	var HEIGHT = 500;
 	var timeWhenGameStarted = Date.now();	//return time in ms
 
 	var frameCount = 0;
@@ -23,8 +23,7 @@
 	Img.upgrade1.src = 'img/upgrade1.png';
 	Img.upgrade2 = new Image();
 	Img.upgrade2.src = 'img/upgrade2.png';
-	Img.map = new Image();
-	Img.map.src = 'img/map.png';
+
 
 
 	testCollisionRectRect = function(rect1,rect2){
@@ -47,8 +46,8 @@
 		var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
 		var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
 		
-		mouseX -= player.x;
-		mouseY -= player.y;
+		mouseX -= WIDTH/2;
+		mouseY -= HEIGHT/2;
 		
 		player.aimAngle = Math.atan2(mouseY,mouseX) / Math.PI * 180;
 	}
@@ -77,7 +76,7 @@
 
 	update = function(){
 		ctx.clearRect(0,0,WIDTH,HEIGHT);
-		drawMap();
+		currentMap.draw();
 		frameCount++;
 		score++;
 		
@@ -90,24 +89,30 @@
 		
 		
 		for(var key in bulletList){
-			bulletList[key].update();
+			var b = bulletList[key];
+			b.update();
 			
 			var toRemove = false;
-			bulletList[key].timer++;
-			if(bulletList[key].timer > 75){
+			b.timer++;
+			if(b.timer > 75){
 				toRemove = true;
 			}
 			
-			for(var key2 in enemyList){
-				/*
-				var isColliding = bulletList[key].testCollision(enemyList[key2]);
-				if(isColliding){
+			if(b.combatType === 'player'){	//bullet was shot by player
+				for(var key2 in enemyList){
+					if(b.testCollision(enemyList[key2])){
+						toRemove = true;
+						delete enemyList[key2];
+					}				
+				}
+			} else if(b.combatType === 'enemy'){
+				if(b.testCollision(player)){
 					toRemove = true;
-					delete enemyList[key2];
-					break;
-				}	
-				*/
-			}
+					player.hp -= 1;
+				}
+			}	
+			
+			
 			if(toRemove){
 				delete bulletList[key];
 			}
@@ -128,11 +133,6 @@
 		for(var key in enemyList){
 			enemyList[key].update();
 			enemyList[key].performAttack();
-			
-			var isColliding = player.testCollision(enemyList[key]);
-			if(isColliding){
-				player.hp = player.hp - 1;
-			}
 		}
 		if(player.hp <= 0){
 			var timeSurvived = Date.now() - timeWhenGameStarted;		
@@ -159,16 +159,33 @@
 		
 	}
 
+
+	Maps = function(id,imgSrc,width,height){
+		var self = {
+			id:id,
+			image:new Image(),
+			width:width,
+			height:height	
+		}
+		self.image.src = imgSrc;
+		
+		
+		self.draw = function(){
+			var x = WIDTH/2 - player.x;
+			var y = HEIGHT/2 - player.y;
+			ctx.drawImage(self.image,0,0,self.image.width,self.image.height,x,y,self.image.width*2,self.image.height*2);
+		}
+		return self;
+	}
+
+
+	currentMap = Maps('field','img/map.png',1280,960);
+
+
 	player = Player();
 	startNewGame();
 
 	setInterval(update,40);
 
-
-	drawMap = function(){
-		var x = WIDTH/2 - player.x;
-		var y = HEIGHT/2 - player.y;
-		ctx.drawImage(Img.map,0,0,Img.map.width,Img.map.height,x,y,Img.map.width*2,Img.map.height*2);
-	}
 
 </script>

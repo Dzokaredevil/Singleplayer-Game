@@ -64,10 +64,10 @@ Entity = function(type,id,x,y,spdX,spdY,width,height,img){
 		self.x += self.spdX;
 		self.y += self.spdY;
 				
-		if(self.x < 0 || self.x > WIDTH){
+		if(self.x < 0 || self.x > currentMap.width){
 			self.spdX = -self.spdX;
 		}
-		if(self.y < 0 || self.y > HEIGHT){
+		if(self.y < 0 || self.y > currentMap.height){
 			self.spdY = -self.spdY;
 		}
 	}
@@ -91,12 +91,12 @@ Player = function(){
 		//ispositionvalid
 		if(self.x < self.width/2)
 			self.x = self.width/2;
-		if(self.x > WIDTH-self.width/2)
-			self.x = WIDTH - self.width/2;
+		if(self.x > currentMap.width-self.width/2)
+			self.x = currentMap.width - self.width/2;
 		if(self.y < self.height/2)
 			self.y = self.height/2;
-		if(self.y > HEIGHT - self.height/2)
-			self.y = HEIGHT - self.height/2;
+		if(self.y > currentMap.height - self.height/2)
+			self.y = currentMap.height - self.height/2;
 	}
 	
 	self.pressingDown = false;
@@ -153,8 +153,8 @@ Enemy = function(id,x,y,spdX,spdY,width,height){
 
 randomlyGenerateEnemy = function(){
 	//Math.random() returns a number between 0 and 1
-	var x = Math.random()*WIDTH;
-	var y = Math.random()*HEIGHT;
+	var x = Math.random()*currentMap.width;
+	var y = Math.random()*currentMap.height;
 	var height = 64;	//between 10 and 40
 	var width = 64;
 	var id = Math.random();
@@ -173,8 +173,8 @@ Upgrade = function (id,x,y,spdX,spdY,width,height,category,img){
 
 randomlyGenerateUpgrade = function(){
 	//Math.random() returns a number between 0 and 1
-	var x = Math.random()*WIDTH;
-	var y = Math.random()*HEIGHT;
+	var x = Math.random()*currentMap.width;
+	var y = Math.random()*currentMap.height;
 	var height = 32;
 	var width = 32;
 	var id = Math.random();
@@ -192,11 +192,12 @@ randomlyGenerateUpgrade = function(){
 	Upgrade(id,x,y,spdX,spdY,width,height,category,img);
 }
 
-Bullet = function (id,x,y,spdX,spdY,width,height){
+Bullet = function (id,x,y,spdX,spdY,width,height,combatType){
 	var self = Entity('bullet',id,x,y,spdX,spdY,width,height,Img.bullet);
 	
 	self.timer = 0;
-
+	self.combatType = combatType;
+	
 	bulletList[id] = self;
 }
 
@@ -215,6 +216,6 @@ generateBullet = function(actor,aimOverwrite){
 	
 	var spdX = Math.cos(angle/180*Math.PI)*5;
 	var spdY = Math.sin(angle/180*Math.PI)*5;
-	Bullet(id,x,y,spdX,spdY,width,height);
+	Bullet(id,x,y,spdX,spdY,width,height,actor.type);
 }
 
