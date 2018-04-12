@@ -1,4 +1,3 @@
-
 var player;
 var enemyList = {};
 var upgradeList = {};
