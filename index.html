@@ -12,11 +12,16 @@
 
 	var score = 0;
 
+	var paused = false;
+
 	var Img = {};
 	Img.player = new Image();
+	Img.player = new Image();
 	Img.player.src = "img/player.png";
-	Img.enemy = new Image();
-	Img.enemy.src = 'img/enemy.png';
+	Img.bat = new Image();
+	Img.bat.src = 'img/bat.png';
+	Img.bee = new Image();
+	Img.bee.src = 'img/bee.png';
 	Img.bullet = new Image();
 	Img.bullet.src = 'img/bullet.png';
 	Img.upgrade1 = new Image();
@@ -61,6 +66,9 @@
 			player.pressingLeft = true;
 		else if(event.keyCode === 87) // w
 			player.pressingUp = true;
+			
+		else if(event.keyCode === 80) //p
+			paused = !paused;
 	}
 
 	document.onkeyup = function(event){
@@ -75,19 +83,27 @@
 	}
 
 	update = function(){
+		if(paused){
+			ctx.fillText('Paused',WIDTH/2,HEIGHT/2);
+			return;
+		}
+		
 		ctx.clearRect(0,0,WIDTH,HEIGHT);
 		currentMap.draw();
 		frameCount++;
 		score++;
 		
-		if(frameCount % 100 === 0)	//every 4 sec
-			randomlyGenerateEnemy();
-
-		if(frameCount % 75 === 0)	//every 3 sec
-			randomlyGenerateUpgrade();
 		
+		updateBullet();
+		updateUpgrade();
+		updateEnemy();
 		
+		player.update();
 		
+		ctx.fillText(player.hp + " Hp",0,30);
+		ctx.fillText('Score: ' + score,200,30);
+	}
+	updateBullet = function(){
 		for(var key in bulletList){
 			var b = bulletList[key];
 			b.update();
@@ -102,7 +118,7 @@
 				for(var key2 in enemyList){
 					if(b.testCollision(enemyList[key2])){
 						toRemove = true;
-						delete enemyList[key2];
+						enemyList[key2].hp -= 1;
 					}				
 				}
 			} else if(b.combatType === 'enemy'){
@@ -117,7 +133,10 @@
 				delete bulletList[key];
 			}
 		}
-		
+	}
+	updateUpgrade = function(){
+		if(frameCount % 75 === 0)	//every 3 sec
+			randomlyGenerateUpgrade();
 		for(var key in upgradeList){
 			upgradeList[key].update();
 			var isColliding = player.testCollision(upgradeList[key]);
@@ -129,21 +148,20 @@
 				delete upgradeList[key];
 			}
 		}
-		
+	}	
+
+	updateEnemy = function(){
+		if(frameCount % 100 === 0)	//every 4 sec
+			randomlyGenerateEnemy();
 		for(var key in enemyList){
 			enemyList[key].update();
-			enemyList[key].performAttack();
 		}
-		if(player.hp <= 0){
-			var timeSurvived = Date.now() - timeWhenGameStarted;		
-			console.log("You lost! You survived for " + timeSurvived + " ms.");		
-			startNewGame();
+		for(var key in enemyList){
+			if(enemyList[key].toRemove)
+				delete enemyList[key];
 		}
-		player.update();
-		
-		ctx.fillText(player.hp + " Hp",0,30);
-		ctx.fillText('Score: ' + score,200,30);
 	}
+
 
 	startNewGame = function(){
 		player.hp = 10;
@@ -181,9 +199,13 @@
 
 	currentMap = Maps('field','img/map.png',1280,960);
 
+
+
+
 	player = Player();
 	startNewGame();
 
 	setInterval(update,40);
+
 
 </script>

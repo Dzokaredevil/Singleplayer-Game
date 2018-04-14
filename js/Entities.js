@@ -85,7 +85,11 @@ Player = function(){
 		if(self.y > currentMap.height - self.height/2)
 			self.y = currentMap.height - self.height/2;
 	}
-	
+	self.onDeath = function(){
+		var timeSurvived = Date.now() - timeWhenGameStarted;		
+		console.log("You lost! You survived for " + timeSurvived + " ms.");		
+		startNewGame();
+	}
 	self.pressingDown = false;
 	self.pressingUp = false;
 	self.pressingLeft = false;
@@ -106,7 +110,10 @@ Actor = function(type,id,x,y,width,height,img,hp,atkSpd){
 	self.update = function(){
 		super_update();
 		self.attackCounter += self.atkSpd;
+		if(self.hp <= 0)
+			self.onDeath();
 	}
+	self.onDeath = function(){};
 	
 	self.performAttack = function(){
 		if(self.attackCounter > 25){	//every 1 sec
@@ -133,16 +140,18 @@ Actor = function(type,id,x,y,width,height,img,hp,atkSpd){
 	return self;
 }
 
-Enemy = function(id,x,y,width,height){
-	var self = Actor('enemy',id,x,y,width,height,Img.enemy,10,1);
+Enemy = function(id,x,y,width,height,img,hp,atkSpd){
+	var self = Actor('enemy',id,x,y,width,height,img,hp,atkSpd);
 	enemyList[id] = self;
+	
+	self.toRemove = false;
 	
 	var super_update = self.update; 
 	self.update = function(){
 		super_update();
 		self.updateAim();
-	}	
-	
+		self.performAttack()
+	}
 	self.updateAim = function(){
 		var diffX = player.x - self.x;
 		var diffY = player.y - self.y;
@@ -150,6 +159,9 @@ Enemy = function(id,x,y,width,height){
 		self.aimAngle = Math.atan2(diffY,diffX) / Math.PI * 180
 	}
 	
+	self.onDeath = function(){
+		self.toRemove = true;
+	}
 	
 	self.updatePosition = function(){
 		var diffX = player.x - self.x;
@@ -172,11 +184,13 @@ randomlyGenerateEnemy = function(){
 	//Math.random() returns a number between 0 and 1
 	var x = Math.random()*currentMap.width;
 	var y = Math.random()*currentMap.height;
-	var height = 64;	//between 10 and 40
+	var height = 64;
 	var width = 64;
 	var id = Math.random();
-	Enemy(id,x,y,width,height);
-	
+	if(Math.random() < 0.5)
+		Enemy(id,x,y,width,height,Img.bat,2,1);
+	else
+		Enemy(id,x,y,width,height,Img.bee,1,3);
 }
 
 Upgrade = function (id,x,y,width,height,category,img){
@@ -246,4 +260,3 @@ generateBullet = function(actor,aimOverwrite){
 	var spdY = Math.sin(angle/180*Math.PI)*5;
 	Bullet(id,x,y,spdX,spdY,width,height,actor.type);
 }
-
