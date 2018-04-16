@@ -3,7 +3,10 @@
 <script> 
 	var ctx = document.getElementById("ctx").getContext("2d"); 
 	ctx.font = '30px Arial';
-
+	ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+	ctx.msImageSmoothingEnabled = false;
+	ctx.imageSmoothingEnabled = false;
+				
 	var WIDTH = 500;
 	var HEIGHT = 500;
 	var timeWhenGameStarted = Date.now();	//return time in ms
@@ -141,8 +144,6 @@
 	}
 
 	Maps.current = Maps('field','img/map.png',1280,960);
-
-
 
 
 	player = Player();
