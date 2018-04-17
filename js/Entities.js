@@ -1,3 +1,4 @@
+
 var player;
 
 Entity = function(type,id,x,y,width,height,img){
@@ -60,7 +61,7 @@ Entity = function(type,id,x,y,width,height,img){
 }
 
 Player = function(){
-	var self = Actor('player','myId',50,40,50,70,Img.player,10,1);
+	var self = Actor('player','myId',50,40,50*1.5,70*1.5,Img.player,10,1);
 	
 	
 	var super_update = self.update;
@@ -75,6 +76,9 @@ Player = function(){
 	}	
 	
 	self.updatePosition = function(){
+		var oldX = self.x;
+		var oldY = self.y;
+		
 		if(self.pressingRight)
 			self.x += 10;
 		if(self.pressingLeft)
@@ -93,6 +97,11 @@ Player = function(){
 			self.y = self.height/2;
 		if(self.y > Maps.current.height - self.height/2)
 			self.y = Maps.current.height - self.height/2;
+		
+		if(Maps.current.isPositionWall(self)){
+			self.x = oldX;
+			self.y = oldY;			
+		}
 	}
 	self.onDeath = function(){
 		var timeSurvived = Date.now() - timeWhenGameStarted;		
@@ -238,6 +247,9 @@ Enemy = function(id,x,y,width,height,img,hp,atkSpd){
 	}
 	
 	self.updatePosition = function(){
+		var oldX = self.x;
+		var oldY = self.y;
+		
 		var diffX = player.x - self.x;
 		var diffY = player.y - self.y;
 		
@@ -250,7 +262,10 @@ Enemy = function(id,x,y,width,height,img,hp,atkSpd){
 			self.y += 3;
 		else
 			self.y -= 3;
-	
+		if(Maps.current.isPositionWall(self)){
+			self.x = oldX;
+			self.y = oldY;			
+		}
 	}
 }
 
@@ -272,8 +287,8 @@ Enemy.randomlyGenerate = function(){
 	//Math.random() returns a number between 0 and 1
 	var x = Math.random()*Maps.current.width;
 	var y = Math.random()*Maps.current.height;
-	var height = 64;
-	var width = 64;
+	var height = 64*1.5;
+	var width = 64*1.5;
 	var id = Math.random();
 	if(Math.random() < 0.5)
 		Enemy(id,x,y,width,height,Img.bat,2,1);
@@ -377,6 +392,9 @@ Bullet.update = function(){
 				player.hp -= 1;
 			}
 		}	
+		if(Maps.current.isPositionWall(b)){
+			toRemove = true;
+		}
 		
 		
 		if(toRemove){
@@ -402,4 +420,3 @@ Bullet.generate = function(actor,aimOverwrite){
 	var spdY = Math.sin(angle/180*Math.PI)*5;
 	Bullet(id,x,y,spdX,spdY,width,height,actor.type);
 }
-
