@@ -1,5 +1,8 @@
 <canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
+<div id="inventory"></div>
+
 <script src="js/Entities.js"></script>
+<script src="js/Inventory.js"></script>
 <script> 
 	var ctx = document.getElementById("ctx").getContext("2d"); 
 	ctx.font = '30px Arial';
@@ -150,7 +153,7 @@
 			var x = WIDTH/2 - player.x;
 			var y = HEIGHT/2 - player.y;
 			ctx.drawImage(self.image,0,0,self.image.width,self.image.height,x,y,self.image.width*2,self.image.height*2);
-		}//
+		}
 		return self;
 	}
 
@@ -167,7 +170,9 @@
 	Maps.current = Maps('field','img/map.png',array2D);
 
 
+
 	player = Player();
+	playerInventory = Inventory();
 	startNewGame();
 
 	setInterval(update,40);

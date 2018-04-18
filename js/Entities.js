@@ -19,7 +19,6 @@ Entity = function(type,id,x,y,width,height,img){
 		var x = self.x - player.x;
 		var y = self.y - player.y;
 		
-		
 		x += WIDTH/2;
 		y += HEIGHT/2;
 		
