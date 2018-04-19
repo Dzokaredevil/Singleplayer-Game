@@ -435,3 +435,4 @@ Bullet.generate = function(actor,aimOverwrite){
 	var spdY = Math.sin(angle/180*Math.PI)*5;
 	Bullet(id,x,y,spdX,spdY,width,height,actor.type);
 }
+

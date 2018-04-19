@@ -1,19 +1,36 @@
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000000;"></canvas>
-<div id="inventory"></div>
+<body style="margin:0px">
+  <canvas id="canvas" width="500" height="500" style="border:1px solid #000000;"></canvas>
+  <div id="inventory"></div>
+</body>
 
 <script src="js/Entities.js"></script>
 <script src="js/Inventory.js"></script>
 <script> 
-	var ctx = document.getElementById("ctx").getContext("2d"); 
-	ctx.font = '30px Arial';
-	ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
-	ctx.msImageSmoothingEnabled = false;
-	ctx.imageSmoothingEnabled = false;
+
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d"); 
 		
 	var TILE_SIZE = 32;	
 	var WIDTH = 500;
 	var HEIGHT = 500;
 	var timeWhenGameStarted = Date.now();	//return time in ms
+
+	let resizeCanvas = function(){
+	  WIDTH = window.innerWidth - 4;
+	  HEIGHT = window.innerHeight - 4;
+	  canvas.width = WIDTH;
+	  canvas.height = HEIGHT;
+	  ctx.font = '30px Arial';
+	  ctx.mozImageSmoothingEnabled = false;	//better graphics for pixel art
+	  ctx.msImageSmoothingEnabled = false;
+	  ctx.imageSmoothingEnabled = false;
+	}
+	resizeCanvas();
+
+	window.addEventListener('resize',function(){
+	  resizeCanvas();
+	});
+
 
 	var frameCount = 0;
 
@@ -59,8 +76,8 @@
 	}
 
 	document.onmousemove = function(mouse){
-		var mouseX = mouse.clientX - document.getElementById('ctx').getBoundingClientRect().left;
-		var mouseY = mouse.clientY - document.getElementById('ctx').getBoundingClientRect().top;
+		var mouseX = mouse.clientX - canvas.getBoundingClientRect().left;
+		var mouseY = mouse.clientY - canvas.getBoundingClientRect().top;
 		
 		mouseX -= WIDTH/2;
 		mouseY -= HEIGHT/2;
